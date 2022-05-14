@@ -1,0 +1,17 @@
+integrations:
+  tripBuilderService:
+    url: "http://localhost:8084"
+  cityService:
+    url: "http://localhost:8083"
+  nologyService:
+    url: "http://localhost:8080"
+  placeService:
+    url: "http://localhost:8082"
+  routingService:
+    url: "http://localhost:8081"
+logging:
+  pattern:
+    level: "[%X{MDC_KEY}] [%X{INVOKER_KEY}] %5p"
+spring:
+  aop:
+    auto: false

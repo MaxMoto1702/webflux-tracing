@@ -16,6 +16,7 @@ import static net.serebryansky.common.util.LoggingUtil.logOnNext;
 public class CityServiceImpl implements CityService {
 
     private final WebClient cityClient;
+    private final String applicationName;
 
     @Override
     public Mono<City> getCity(String cityId) {
@@ -24,11 +25,10 @@ public class CityServiceImpl implements CityService {
                 .doOnEach(logOnNext(p -> log.info("Get city {}", p)))
                 .then(Mono.deferContextual(contextView -> {
                             String requestId = contextView.get("CONTEXT_KEY");
-                            String invoker = contextView.get("INVOKER");
                             return cityClient.get()
                                     .uri("/cities/{id}", cityId)
                                     .header("X-Request-ID", requestId)
-                                    .header("X-Source", invoker)
+                                    .header("X-Source", applicationName)
                                     .retrieve()
                                     .bodyToMono(City.class);
                         }

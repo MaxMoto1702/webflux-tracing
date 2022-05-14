@@ -34,13 +34,18 @@ public class TripBuilderApplication {
     }
 
     @Bean
-    public PlaceService placeService(WebClient placeClient) {
-        return new PlaceServiceImpl(placeClient);
+    public PlaceService placeService(WebClient placeClient, String applicationName) {
+        return new PlaceServiceImpl(placeClient, applicationName);
     }
 
     @Bean
-    public RoutingService routingService(WebClient routingClient) {
-        return new RoutingServiceImpl(routingClient);
+    public String applicationName() {
+        return "trip-builder";
+    }
+
+    @Bean
+    public RoutingService routingService(WebClient routingClient, String applicationName) {
+        return new RoutingServiceImpl(routingClient, applicationName);
     }
 
     public static void main(String[] args) {

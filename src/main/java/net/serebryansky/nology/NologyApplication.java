@@ -1,6 +1,5 @@
 package net.serebryansky.nology;
 
-import lombok.val;
 import net.serebryansky.common.filter.RequestIdFilter;
 import net.serebryansky.common.service.CityService;
 import net.serebryansky.common.service.PlaceService;
@@ -14,11 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.Collections;
-import java.util.function.Consumer;
 
 @SpringBootApplication
 public class NologyApplication {
@@ -57,23 +52,28 @@ public class NologyApplication {
     }
 
     @Bean
-    public PlaceService placeService(WebClient placeClient) {
-        return new PlaceServiceImpl(placeClient);
+    public PlaceService placeService(WebClient placeClient, String applicationName) {
+        return new PlaceServiceImpl(placeClient, applicationName);
     }
 
     @Bean
-    public RoutingService routingService(WebClient routingClient) {
-        return new RoutingServiceImpl(routingClient);
+    public String applicationName() {
+        return "nology";
     }
 
     @Bean
-    public TripBuilderService tripBuilderService(WebClient tripBuilderClient) {
-        return new TripBuilderServiceImpl(tripBuilderClient);
+    public RoutingService routingService(WebClient routingClient, String applicationName) {
+        return new RoutingServiceImpl(routingClient, applicationName);
     }
 
     @Bean
-    public CityService cityService(WebClient cityClient) {
-        return new CityServiceImpl(cityClient);
+    public TripBuilderService tripBuilderService(WebClient tripBuilderClient, String applicationName) {
+        return new TripBuilderServiceImpl(tripBuilderClient, applicationName);
+    }
+
+    @Bean
+    public CityService cityService(WebClient cityClient, String applicationName) {
+        return new CityServiceImpl(cityClient, applicationName);
     }
 
     public static void main(String[] args) {

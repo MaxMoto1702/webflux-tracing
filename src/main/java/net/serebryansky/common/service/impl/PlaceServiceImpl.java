@@ -16,6 +16,7 @@ import static net.serebryansky.common.util.LoggingUtil.logOnNext;
 @RequiredArgsConstructor
 public class PlaceServiceImpl implements PlaceService {
     private final WebClient placeClient;
+    private final String applicationName;
 
     @Override
     public Flux<Place> getPlaces() {
@@ -24,12 +25,11 @@ public class PlaceServiceImpl implements PlaceService {
                 .then(Mono.subscriberContext())
                 .flatMapMany(contextView -> {
                     String requestId = contextView.get("CONTEXT_KEY");
-                    String invoker = contextView.get("INVOKER");
                     return placeClient
                             .get()
                             .uri("/places")
                             .header("X-Request-ID", requestId)
-                            .header("X-Source", invoker)
+                            .header("X-Source", applicationName)
                             .retrieve()
                             .bodyToFlux(Place.class);
                 });
@@ -42,12 +42,11 @@ public class PlaceServiceImpl implements PlaceService {
                 .doOnEach(logOnNext(p -> log.info("Get place {}", p)))
                 .then(Mono.deferContextual(contextView -> {
                     String requestId = contextView.get("CONTEXT_KEY");
-                    String invoker = contextView.get("INVOKER");
                     return placeClient
                             .get()
                             .uri("/places/{id}", placeId)
                             .header("X-Request-ID", requestId)
-                            .header("X-Source", invoker)
+                            .header("X-Source", applicationName)
                             .retrieve()
                             .bodyToMono(Place.class);
                 }));

@@ -19,6 +19,7 @@ import static net.serebryansky.common.util.LoggingUtil.logOnNext;
 @RequiredArgsConstructor
 public class RoutingServiceImpl implements RoutingService {
     private final WebClient routingClient;
+    private final String applicationName;
 
     @Override
     public Mono<DurationMatrixResponse> getDurationMatrix(List<Place> p) {
@@ -26,11 +27,10 @@ public class RoutingServiceImpl implements RoutingService {
                 .doOnEach(logOnNext(p1 -> log.info("Get duration matrix for {}", p1)))
                 .then(Mono.deferContextual(contextView -> {
                     String requestId = contextView.get("CONTEXT_KEY");
-                    String invoker = contextView.get("INVOKER");
                     return routingClient.post()
                             .uri("/durations/matrix")
                             .header("X-Request-ID", requestId)
-                            .header("X-Source", invoker)
+                            .header("X-Source", applicationName)
                             .bodyValue(p)
                             .retrieve()
                             .bodyToMono(DurationMatrixResponse.class);
@@ -44,12 +44,11 @@ public class RoutingServiceImpl implements RoutingService {
                 .doOnEach(logOnNext(p -> log.info("Get route between {} and {}", p.get(0), p.get(1))))
                 .then(Mono.deferContextual(contextView -> {
                     String requestId = contextView.get("CONTEXT_KEY");
-                    String invoker = contextView.get("INVOKER");
                     return routingClient
                             .post()
                             .uri("/routes/search")
                             .header("X-Request-ID", requestId)
-                            .header("X-Source", invoker)
+                            .header("X-Source", applicationName)
                             .bodyValue(new RouteSearchRequest(placePair.get(0), placePair.get(1)))
                             .retrieve()
                             .bodyToMono(Route.class);

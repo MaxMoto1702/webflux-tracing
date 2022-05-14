@@ -14,7 +14,7 @@ public class LoggingUtil {
         return signal -> {
             String contextValue = signal.getContextView().get("CONTEXT_KEY");
             String invoker = signal.getContextView().get("INVOKER");
-            try (MDC.MDCCloseable cMdc = MDC.putCloseable("MDC_KEY", contextValue); MDC.MDCCloseable cMdc2 = MDC.putCloseable("INVOKER_KEY", contextValue)) {
+            try (MDC.MDCCloseable cMdc2 = MDC.putCloseable("INVOKER_KEY", invoker); MDC.MDCCloseable cMdc = MDC.putCloseable("MDC_KEY", contextValue); ) {
                 logStatement.run();
             }
         };
@@ -23,7 +23,8 @@ public class LoggingUtil {
     public static <T> Consumer<Signal<T>> logOnEach(Consumer<T> logStatement) {
         return signal -> {
             String contextValue = signal.getContextView().get("CONTEXT_KEY");
-            try (MDC.MDCCloseable cMdc = MDC.putCloseable("MDC_KEY", contextValue)) {
+            String invoker = signal.getContextView().get("INVOKER");
+            try (MDC.MDCCloseable cMdc2 = MDC.putCloseable("INVOKER_KEY", invoker); MDC.MDCCloseable cMdc = MDC.putCloseable("MDC_KEY", contextValue); ) {
                 logStatement.accept(signal.get());
             }
         };
@@ -33,7 +34,8 @@ public class LoggingUtil {
         return signal -> {
             if (signal.isOnNext()) {
                 String contextValue = signal.getContextView().get("CONTEXT_KEY");
-                try (MDC.MDCCloseable cMdc = MDC.putCloseable("MDC_KEY", contextValue)) {
+                String invoker = signal.getContextView().get("INVOKER");
+                try (MDC.MDCCloseable cMdc2 = MDC.putCloseable("INVOKER_KEY", invoker); MDC.MDCCloseable cMdc = MDC.putCloseable("MDC_KEY", contextValue); ) {
                     logStatement.accept(signal.get());
                 }
             }

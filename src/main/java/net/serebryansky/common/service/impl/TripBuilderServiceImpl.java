@@ -17,6 +17,7 @@ import static net.serebryansky.common.util.LoggingUtil.logOnNext;
 public class TripBuilderServiceImpl implements TripBuilderService {
 
     private final WebClient tripBuilderClient;
+    private final String applicationName;
 
     @Override
     public Mono<TripBuilderResponse> buildTrip(Trip trip) {
@@ -25,12 +26,11 @@ public class TripBuilderServiceImpl implements TripBuilderService {
                 .doOnEach(logOnNext(p -> log.info("Build trip {}", p)))
                 .then(Mono.deferContextual(contextView -> {
                             String requestId = contextView.get("CONTEXT_KEY");
-                            String invoker = contextView.get("INVOKER");
                             return tripBuilderClient
                                     .post()
                                     .uri("build")
                                     .header("X-Request-ID", requestId)
-                                    .header("X-Source", invoker)
+                                    .header("X-Source", applicationName)
                                     .bodyValue(trip)
                                     .retrieve()
                                     .bodyToMono(TripBuilderResponse.class);

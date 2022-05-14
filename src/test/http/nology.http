@@ -1,11 +1,9 @@
 POST localhost:8080/trips/generate
 Content-Type: application/json
 X-Request-ID: test-request-id-2
-X-B3-TraceId: test-trace-id
-user: kjhghjgjh
 
 {
-  "cityId": "1"
+  "cityId": "new-york"
 }
 
 ###

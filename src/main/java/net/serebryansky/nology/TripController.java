@@ -17,6 +17,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static net.serebryansky.nology.LoggingUtil.logOnEach;
+import static net.serebryansky.nology.LoggingUtil.logOnNext;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
@@ -31,10 +33,8 @@ public class TripController {
     private final WebClient routingClient;
 
     @PostMapping("generate")
-    @Loggable
     public ResponseEntity<Mono<Trip>> generate(@RequestBody TripGenerationRequest request, @RequestHeader(value = "X-Request-ID", required = false) String requestId) {
         log.info("Request #{}", requestId);
-//        MDC.MDCCloseable cMdc = MDC.putCloseable("MDC_KEY", requestId);
         val trip = new Trip();
         val city = getCity(request.getCityId());
         val builderResponse = buildTrip(trip);
@@ -67,61 +67,71 @@ public class TripController {
     }
 
     private Mono<Route> getRoute(List<Place> placePair) {
-        log.info("Get route between {} and {}", placePair.get(0), placePair.get(1));
-        return ReactiveRequestContextHolder.getRequest()
-                .mapNotNull(r -> r.getHeaders().getFirst("X-Request-ID"))
-                .flatMap(requestId -> routingClient
-                        .post()
-                        .uri("/routes/search")
-                        .header("X-Request-ID", requestId)
-                        .header("X-B3-TRACEID", MDC.get("X-B3-TraceId"))
-                        .bodyValue(new RouteSearchRequest(placePair.get(0), placePair.get(1)))
-                        .retrieve()
-                        .bodyToMono(Route.class))
-                .cache();
+        // log.info("Get route between {} and {}", placePair.get(0), placePair.get(1));
+        return Mono.just(placePair)
+                .doOnEach(logOnNext(p -> log.info("Get route between {} and {}", p.get(0), p.get(1))))
+                .then(Mono.deferContextual(contextView -> {
+                    String requestId = contextView.get("CONTEXT_KEY");
+                    return routingClient
+                            .post()
+                            .uri("/routes/search")
+                            .header("X-Request-ID", requestId)
+                            .bodyValue(new RouteSearchRequest(placePair.get(0), placePair.get(1)))
+                            .retrieve()
+                            .bodyToMono(Route.class)
+                            .cache();
+                }));
     }
 
     private Mono<Place> getPlace(String placeId) {
-        log.info("Get place {}", placeId);
-        return ReactiveRequestContextHolder.getRequest()
-                .mapNotNull(r -> r.getHeaders().getFirst("X-Request-ID"))
-                .flatMap(requestId -> placeClient
-                        .get()
-                        .uri("/places/{id}", placeId)
-                        .header("X-Request-ID", requestId)
-                        .header("X-B3-TRACEID", MDC.get("X-B3-TraceId"))
-                        .retrieve()
-                        .bodyToMono(Place.class))
-                .cache();
+        // log.info("Get place {}", placeId);
+        return Mono.just(placeId)
+                .doOnEach(logOnNext(p -> log.info("Get place {}", p)))
+                .then(Mono.deferContextual(contextView -> {
+                    String requestId = contextView.get("CONTEXT_KEY");
+                    return placeClient
+                            .get()
+                            .uri("/places/{id}", placeId)
+                            .header("X-Request-ID", requestId)
+                            .retrieve()
+                            .bodyToMono(Place.class)
+                            .cache();
+                }));
     }
 
     private Mono<TripBuilderResponse> buildTrip(Trip trip) {
-        log.info("Build trip {}", trip);
-        return ReactiveRequestContextHolder.getRequest()
-                .mapNotNull(r -> r.getHeaders().getFirst("X-Request-ID"))
-                .flatMap(requestId -> tripBuilderClient
-                        .post()
-                        .uri("build")
-                        .header("X-Request-ID", requestId)
-                        .header("X-B3-TRACEID", MDC.get("X-B3-TraceId"))
-                        .bodyValue(trip)
-                        .retrieve()
-                        .bodyToMono(TripBuilderResponse.class)
-                )
-                .cache();
+        // log.info("Build trip {}", trip);
+        return Mono.just(trip)
+                .doOnEach(logOnNext(p -> log.info("Build trip {}", p)))
+                .then(Mono.deferContextual(contextView -> {
+                            String requestId = contextView.get("CONTEXT_KEY");
+                            return tripBuilderClient
+                                    .post()
+                                    .uri("build")
+                                    .header("X-Request-ID", requestId)
+                                    .header("X-B3-TRACEID", MDC.get("X-B3-TraceId"))
+                                    .bodyValue(trip)
+                                    .retrieve()
+                                    .bodyToMono(TripBuilderResponse.class)
+                                    .cache();
+                        }
+                ));
     }
 
     private Mono<City> getCity(String cityId) {
-        log.info("Get city {}", cityId);
-        return ReactiveRequestContextHolder.getRequest()
-                .mapNotNull(r -> r.getHeaders().getFirst("X-Request-ID"))
-                .flatMap(requstId -> cityClient.get()
-                        .uri("/cities/{id}", cityId)
-                        .header("X-Request-ID", requstId)
-                        .header("X-B3-TRACEID", MDC.get("X-B3-TraceId"))
-                        .retrieve()
-                        .bodyToMono(City.class)
-                )
-                .cache();
+        // log.info("Get city {}", cityId);
+        return Mono.just(cityId)
+                .doOnEach(logOnNext(p -> log.info("Get city {}", p)))
+                .then(Mono.deferContextual(contextView -> {
+                            String requestId = contextView.get("CONTEXT_KEY");
+                            return cityClient.get()
+                                    .uri("/cities/{id}", cityId)
+                                    .header("X-Request-ID", requestId)
+                                    .header("X-B3-TRACEID", MDC.get("X-B3-TraceId"))
+                                    .retrieve()
+                                    .bodyToMono(City.class)
+                                    .cache();
+                        }
+                ));
     }
 }

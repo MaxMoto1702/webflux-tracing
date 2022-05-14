@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import static net.serebryansky.nology.LoggingUtil.logOnEach;
+
 @Slf4j
 @Configuration
 public class RequestIdFilter implements WebFilter {
@@ -34,28 +36,5 @@ public class RequestIdFilter implements WebFilter {
         return requestIdHeaders == null || requestIdHeaders.isEmpty()
                 ? UUID.randomUUID().toString()
                 : requestIdHeaders.get(0);
-    }
-
-    public static <T> Consumer<Signal<T>> logOnEach(Consumer<T> logStatement) {
-        return signal -> {
-            String contextValue = signal.getContextView().get("CONTEXT_KEY");
-            MDC.put("MDC_KEY", contextValue);
-            logStatement.accept(signal.get());
-//            try (MDC.MDCCloseable cMdc = MDC.putCloseable("MDC_KEY", contextValue)) {
-//                logStatement.accept(signal.get());
-//            }
-        };
-    }
-
-    public static <T> Consumer<Signal<T>> logOnNext(Consumer<T> logStatement) {
-        return signal -> {
-            if (!signal.isOnNext()) return;
-            String contextValue = signal.getContextView().get("CONTEXT_KEY");
-            MDC.put("MDC_KEY", contextValue);
-            logStatement.accept(signal.get());
-//            try (MDC.MDCCloseable cMdc = MDC.putCloseable("MDC_KEY", contextValue)) {
-//                logStatement.accept(signal.get());
-//            }
-        };
     }
 }

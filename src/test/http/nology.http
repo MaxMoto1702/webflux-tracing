@@ -1,0 +1,15 @@
+POST localhost:8080/trips/generate
+Content-Type: application/json
+X-Request-ID: test-request-id-2
+
+{
+  "cityId": "new-york"
+}
+
+###
+
+GET http://localhost:8080/request
+user: pkslow
+
+###
+

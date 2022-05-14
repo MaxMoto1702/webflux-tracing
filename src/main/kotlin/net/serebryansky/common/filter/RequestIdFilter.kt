@@ -1,6 +1,6 @@
 package net.serebryansky.common.filter
 
-import net.serebryansky.common.util.LoggingUtil
+import net.serebryansky.common.util.logOnNext
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.web.server.ServerWebExchange
@@ -9,7 +9,6 @@ import org.springframework.web.server.WebFilterChain
 import reactor.core.publisher.Mono
 import reactor.util.context.Context
 import java.util.*
-import java.util.function.Consumer
 
 class RequestIdFilter : WebFilter {
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
@@ -18,7 +17,7 @@ class RequestIdFilter : WebFilter {
         val invoker = getInvoker(request.headers)
         return chain
                 .filter(exchange)
-                .doOnEach(LoggingUtil.Companion.logOnEach<Void>(Consumer { r: Void? -> log.info("{} {}", request.method, request.uri) }))
+                .doOnEach(logOnNext { log.info("{} {}", request.method, request.uri) })
                 .contextWrite(Context.of("CONTEXT_KEY", requestId, "INVOKER", invoker))
     }
 

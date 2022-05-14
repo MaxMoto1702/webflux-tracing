@@ -74,11 +74,8 @@ class NologyApplication {
     fun cityService(cityClient: WebClient?, applicationName: String?): CityService {
         return CityServiceImpl(cityClient!!, applicationName!!)
     }
+}
 
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            SpringApplication.run(NologyApplication::class.java, *args)
-        }
-    }
+fun main(args: Array<String>) {
+    SpringApplication.run(NologyApplication::class.java, *args)
 }

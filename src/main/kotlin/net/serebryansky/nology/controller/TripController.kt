@@ -6,7 +6,7 @@ import net.serebryansky.common.service.CityService
 import net.serebryansky.common.service.PlaceService
 import net.serebryansky.common.service.RoutingService
 import net.serebryansky.common.service.TripBuilderService
-import net.serebryansky.common.util.LoggingUtil.Companion.logOnEach
+import net.serebryansky.common.util.logOnEach
 import net.serebryansky.nology.model.Trip
 import net.serebryansky.nology.model.TripGenerationRequest
 import net.serebryansky.place.model.Place
@@ -27,32 +27,33 @@ class TripController(private val tripBuilderService: TripBuilderService, private
     @PostMapping("generate")
     fun generate(@RequestBody request: TripGenerationRequest): ResponseEntity<Mono<Trip>> {
         val trip = Trip()
-        val city: Mono<City> = cityService.getCity(request.cityId!!)
+        val city: Mono<City> = cityService.getCity(request.cityId)
                 .cache()
         val builderResponse: Mono<TripBuilderResponse> = tripBuilderService.buildTrip(trip)
                 .cache()
         val placeIds = builderResponse
                 .flux()
-                .flatMap { response: TripBuilderResponse -> Flux.fromIterable(response.placeIds) }
+                .flatMap { Flux.fromIterable(it.placeIds) }
         val places = placeIds
-                .flatMap { id: String? -> placeService.getPlace(id!!) }
+                .flatMap { placeService.getPlace(it!!) }
                 .cache()
         val routes = places // send requests to routing
                 .buffer(2, 1)
-                .filter { p: List<Place?> -> p.size == 2 }
-                .flatMap { places: List<Place> -> routingService.getRoute(places) }
+                .filter { it.size == 2 }
+                .flatMap { routingService.getRoute(it) }
                 .cache()
-        val result = Mono.empty<Any>()
+        val result = Mono
+                .empty<Any>()
                 .doOnEach(logOnEach(Consumer { log.info("Generate {}", request) })) // send request to city
                 .then(city)
-                .doOnNext { city: City? -> trip.city = city } // send request to builder
+                .doOnNext { trip.city = it } // send request to builder
                 .then(builderResponse) // send requests to place service
                 .thenMany(places)
                 .collectList()
-                .doOnNext { places: List<Place?> -> trip.places = places } // send requests to routing
+                .doOnNext { trip.places = it } // send requests to routing
                 .thenMany(routes)
                 .collectList()
-                .doOnNext { routes: List<Route?> -> trip.routes = routes }
+                .doOnNext { trip.routes = it }
                 .then(Mono.just(trip))
         return ResponseEntity.ok(result)
     }

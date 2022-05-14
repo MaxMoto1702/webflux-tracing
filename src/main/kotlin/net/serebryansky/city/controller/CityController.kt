@@ -1,7 +1,7 @@
 package net.serebryansky.city.controller
 
 import net.serebryansky.city.model.City
-import net.serebryansky.common.util.LoggingUtil.Companion.logOnEach
+import net.serebryansky.common.util.logOnEach
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,9 +16,10 @@ import java.util.function.Consumer
 class CityController {
     @GetMapping("{id}")
     operator fun get(@PathVariable id: String): ResponseEntity<Mono<City>> {
-        val city = City()
-        city.id = id
-        city.name = "City #$id"
+        val city = City(
+                id = id,
+                name = "City #$id"
+        )
         return ResponseEntity.ok(Mono.empty<Any>()
                 .doOnEach(logOnEach(Consumer { log.info("Get city #{}", id) }))
                 .then(Mono.just(city)))

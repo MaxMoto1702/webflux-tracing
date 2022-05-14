@@ -1,6 +1,6 @@
 package net.serebryansky.routing.controller
 
-import net.serebryansky.common.util.LoggingUtil.Companion.logOnEach
+import net.serebryansky.common.util.logOnEach
 import net.serebryansky.place.model.Place
 import net.serebryansky.routing.model.DurationMatrixResponse
 import org.slf4j.LoggerFactory
@@ -18,16 +18,9 @@ import java.util.stream.Collectors
 class DurationController {
     @PostMapping("matrix")
     fun matrix(@RequestBody places: List<Place?>): ResponseEntity<Mono<DurationMatrixResponse>> {
-        val response = DurationMatrixResponse()
-        response.matrix = places
-                .stream()
-                .map { placeStart: Place? ->
-                    places
-                            .stream()
-                            .map { placeEnd: Place? -> 10.0 }
-                            .collect(Collectors.toList())
-                }
-                .collect(Collectors.toList())
+        val response = DurationMatrixResponse(
+                matrix = places.map { places.map { 10.0 } }
+        )
         return ResponseEntity.ok(Mono.empty<Any>()
                 .doOnEach(logOnEach(Consumer { log.info("Duration matrix for {}", places) }))
                 .then(Mono.just(response)))

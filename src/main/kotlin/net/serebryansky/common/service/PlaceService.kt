@@ -5,6 +5,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 interface PlaceService {
-    val places: Flux<Place>
+    fun getPlaces(): Flux<Place>
     fun getPlace(id: String): Mono<Place>
 }

@@ -3,7 +3,7 @@ package net.serebryansky.builder.controller
 import net.serebryansky.builder.model.TripBuilderResponse
 import net.serebryansky.common.service.PlaceService
 import net.serebryansky.common.service.RoutingService
-import net.serebryansky.common.util.LoggingUtil.Companion.logOnEach
+import net.serebryansky.common.util.logOnEach
 import net.serebryansky.nology.model.Trip
 import net.serebryansky.place.model.Place
 import org.slf4j.LoggerFactory
@@ -20,23 +20,23 @@ import java.util.function.Consumer
 @RequestMapping
 class TripBuilderController(private val placeService: PlaceService, private val routingService: RoutingService) {
     @PostMapping("build")
-    fun build(@RequestBody trip: Trip?): ResponseEntity<Mono<TripBuilderResponse>> {
+    fun build(@RequestBody trip: Trip): ResponseEntity<Mono<TripBuilderResponse>> {
         val response = TripBuilderResponse()
-        val places: Flux<Place> = placeService.places
+        val places: Flux<Place> = placeService.getPlaces()
                 .cache()
         val durationMatrix = places
                 .collectList()
-                .flatMap { places: List<Place>? -> routingService.getDurationMatrix(places!!) }
+                .flatMap { routingService.getDurationMatrix(it!!) }
                 .cache()
         val placeIds = places
-                .map { obj: Place -> obj.id }
+                .map { it.id }
         val result = Mono.empty<Any>()
                 .doOnEach(logOnEach(Consumer { log.info("Build {}", trip) }))
                 .thenMany(places)
                 .then(durationMatrix)
                 .thenMany(placeIds)
                 .collectList()
-                .doOnNext { placeIds: List<String?> -> response.placeIds = placeIds }
+                .doOnNext { response.placeIds = it }
                 .then(Mono.just(response))
         return ResponseEntity.ok(result)
     }

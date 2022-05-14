@@ -1,6 +1,6 @@
 package net.serebryansky.routing.controller
 
-import net.serebryansky.common.util.LoggingUtil.Companion.logOnEach
+import net.serebryansky.common.util.logOnEach
 import net.serebryansky.routing.model.Route
 import net.serebryansky.routing.model.RouteSearchRequest
 import org.slf4j.LoggerFactory
@@ -17,9 +17,10 @@ import java.util.function.Consumer
 class RouteController {
     @PostMapping("search")
     fun search(@RequestBody request: RouteSearchRequest): ResponseEntity<Mono<Route>> {
-        val route = Route()
-        route.placeStart = request.placeStart
-        route.placeEnd = request.placeEnd
+        val route = Route(
+                placeStart = request.placeStart,
+                placeEnd = request.placeEnd
+        )
         return ResponseEntity.ok(Mono.empty<Any>()
                 .doOnEach(logOnEach(Consumer { log.info("Search route between {} and {}", request.placeStart, request.placeEnd) }))
                 .then(Mono.just(route)))

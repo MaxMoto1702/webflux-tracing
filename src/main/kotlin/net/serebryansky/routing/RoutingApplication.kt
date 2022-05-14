@@ -20,11 +20,8 @@ class RoutingApplication {
     fun requestIdFilter(): RequestIdFilter {
         return RequestIdFilter()
     }
+}
 
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            SpringApplication.run(RoutingApplication::class.java, *args)
-        }
-    }
+fun main(args: Array<String>) {
+    SpringApplication.run(RoutingApplication::class.java, *args)
 }

@@ -46,11 +46,8 @@ class TripBuilderApplication {
     fun routingService(routingClient: WebClient?, applicationName: String?): RoutingService {
         return RoutingServiceImpl(routingClient!!, applicationName!!)
     }
+}
 
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            SpringApplication.run(TripBuilderApplication::class.java, *args)
-        }
-    }
+fun main(args: Array<String>) {
+    SpringApplication.run(TripBuilderApplication::class.java, *args)
 }

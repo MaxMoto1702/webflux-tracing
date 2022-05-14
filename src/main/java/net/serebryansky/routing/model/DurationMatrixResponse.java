@@ -1,4 +1,4 @@
-package net.serebryansky.routing;
+package net.serebryansky.routing.model;
 
 import lombok.Data;
 

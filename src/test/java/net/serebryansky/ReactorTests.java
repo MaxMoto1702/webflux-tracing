@@ -1,19 +1,15 @@
 package net.serebryansky;
 
 import org.junit.jupiter.api.Test;
-import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Signal;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.function.Consumer;
 
-import static net.serebryansky.nology.LoggingUtil.logOnEach;
+import static net.serebryansky.common.util.LoggingUtil.logOnEach;
 
 public class ReactorTests {
 

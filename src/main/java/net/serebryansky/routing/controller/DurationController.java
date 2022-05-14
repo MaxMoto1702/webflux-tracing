@@ -1,8 +1,9 @@
-package net.serebryansky.routing;
+package net.serebryansky.routing.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import net.serebryansky.place.Place;
+import net.serebryansky.place.model.Place;
+import net.serebryansky.routing.model.DurationMatrixResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -10,6 +11,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.serebryansky.common.util.LoggingUtil.logOnEach;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
@@ -17,8 +19,7 @@ import static org.springframework.http.ResponseEntity.ok;
 @Slf4j
 public class DurationController {
     @PostMapping("matrix")
-    public ResponseEntity<Mono<DurationMatrixResponse>> matrix(@RequestBody List<Place> places, @RequestHeader(value = "X-Request-ID", required = false) String requestId) {
-        log.info("Request #{}", requestId);
+    public ResponseEntity<Mono<DurationMatrixResponse>> matrix(@RequestBody List<Place> places) {
         val response = new DurationMatrixResponse();
         response.setMatrix(places
                 .stream()
@@ -27,6 +28,8 @@ public class DurationController {
                         .map(placeEnd -> 10.0)
                         .collect(Collectors.toList()))
                 .collect(Collectors.toList()));
-        return ok(Mono.just(response));
+        return ok(Mono.empty()
+                .doOnEach(logOnEach(() -> log.info("Duration matrix for {}", places)))
+                .then(Mono.just(response)));
     }
 }

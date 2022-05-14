@@ -1,11 +1,9 @@
-package net.serebryansky.routing;
+package net.serebryansky.routing.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.serebryansky.place.Place;
-
-import java.util.List;
+import net.serebryansky.place.model.Place;
 
 @Data
 @NoArgsConstructor

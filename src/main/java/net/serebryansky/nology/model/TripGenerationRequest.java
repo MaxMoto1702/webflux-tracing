@@ -1,4 +1,4 @@
-package net.serebryansky.nology;
+package net.serebryansky.nology.model;
 
 import lombok.Data;
 

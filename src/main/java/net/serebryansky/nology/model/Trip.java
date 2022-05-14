@@ -1,10 +1,10 @@
-package net.serebryansky.nology;
+package net.serebryansky.nology.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import net.serebryansky.city.City;
-import net.serebryansky.place.Place;
-import net.serebryansky.routing.Route;
+import net.serebryansky.city.model.City;
+import net.serebryansky.place.model.Place;
+import net.serebryansky.routing.model.Route;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

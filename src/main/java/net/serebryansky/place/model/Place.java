@@ -1,4 +1,4 @@
-package net.serebryansky.place;
+package net.serebryansky.place.model;
 
 import lombok.Data;
 

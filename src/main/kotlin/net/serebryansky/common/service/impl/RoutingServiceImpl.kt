@@ -1,48 +1,47 @@
 package net.serebryansky.common.service.impl
 
+import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactor.mono
+import mu.KotlinLogging
 import net.serebryansky.common.service.RoutingService
-import net.serebryansky.common.util.logOnNext
 import net.serebryansky.place.model.Place
 import net.serebryansky.routing.model.DurationMatrixResponse
 import net.serebryansky.routing.model.Route
 import net.serebryansky.routing.model.RouteSearchRequest
-import org.slf4j.LoggerFactory
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.awaitBody
 import reactor.core.publisher.Mono
 
-class RoutingServiceImpl(private val routingClient: WebClient, private val applicationName: String) : RoutingService {
-    override fun getDurationMatrix(places: List<Place>): Mono<DurationMatrixResponse> {
-        return Mono.just(places)
-                .doOnEach(logOnNext<List<Place>> { log.info("Get duration matrix for {}", it) })
-                .then(Mono.deferContextual {
-                    val requestId = it.get<String>("CONTEXT_KEY")
-                    routingClient.post()
-                            .uri("/durations/matrix")
-                            .header("X-Request-ID", requestId)
-                            .header("X-Source", applicationName)
-                            .bodyValue(places)
-                            .retrieve()
-                            .bodyToMono(DurationMatrixResponse::class.java)
-                })
+class RoutingServiceImpl(
+    private val routingClient: WebClient,
+    private val applicationName: String,
+) : RoutingService {
+
+    private val log = KotlinLogging.logger {}
+
+    override suspend fun getDurationMatrix(places: List<Place>): DurationMatrixResponse {
+        log.info { "Get duration matrix for $places" }
+        val requestId = Mono.deferContextual { mono { it.get<String>("CONTEXT_KEY") } }.awaitFirst()
+        return routingClient
+            .post()
+            .uri("/durations/matrix")
+            .header("X-Request-ID", requestId)
+            .header("X-Source", applicationName)
+            .bodyValue(places)
+            .retrieve()
+            .awaitBody()
     }
 
-    override fun getRoute(places: List<Place>): Mono<Route> {
-        return Mono.just(places)
-                .doOnEach(logOnNext<List<Place>> { log.info("Get route between {} and {}", it[0], it[1]) })
-                .then(Mono.deferContextual {
-                    val requestId = it.get<String>("CONTEXT_KEY")
-                    routingClient
-                            .post()
-                            .uri("/routes/search")
-                            .header("X-Request-ID", requestId)
-                            .header("X-Source", applicationName)
-                            .bodyValue(RouteSearchRequest(places[0], places[1]))
-                            .retrieve()
-                            .bodyToMono(Route::class.java)
-                })
-    }
-
-    companion object {
-        private val log = LoggerFactory.getLogger(RoutingServiceImpl::class.java)
+    override suspend fun getRoute(places: List<Place>): Route {
+        log.info { "Get route between ${places[0]} and ${places[1]}" }
+        val requestId = Mono.deferContextual { mono { it.get<String>("CONTEXT_KEY") } }.awaitFirst()
+        return routingClient
+            .post()
+            .uri("/routes/search")
+            .header("X-Request-ID", requestId)
+            .header("X-Source", applicationName)
+            .bodyValue(RouteSearchRequest(places[0], places[1]))
+            .retrieve()
+            .awaitBody()
     }
 }

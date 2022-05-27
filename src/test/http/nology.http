@@ -1,6 +1,6 @@
 POST localhost:8080/trips/generate
 Content-Type: application/json
-X-Request-ID: test-request-id-2
+X-Request-ID: test-request-id-11
 
 {
   "cityId": "new-york"
@@ -10,6 +10,12 @@ X-Request-ID: test-request-id-2
 
 GET http://localhost:8080/request
 user: pkslow
+
+###
+
+GET http://localhost:8083/cities/new-york?trace=true
+user: pkslow
+X-Request-ID: test-request-id-10
 
 ###
 

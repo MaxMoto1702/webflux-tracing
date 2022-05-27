@@ -1,7 +1,7 @@
 package net.serebryansky.common.filter
 
-import net.serebryansky.common.util.logOnNext
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import org.springframework.http.HttpHeaders
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.WebFilter
@@ -15,10 +15,14 @@ class RequestIdFilter : WebFilter {
         val request = exchange.request
         val requestId = getRequestId(request.headers)
         val invoker = getInvoker(request.headers)
-        return chain
-                .filter(exchange)
-                .doOnEach(logOnNext { log.info("{} {}", request.method, request.uri) })
-                .contextWrite(Context.of("CONTEXT_KEY", requestId, "INVOKER", invoker))
+        return MDC.putCloseable("MDC_KEY", requestId).use {
+            MDC.putCloseable("INVOKER_KEY", invoker).use {
+                chain
+                    .filter(exchange)
+                    .contextWrite(Context.of("CONTEXT_KEY", requestId, "INVOKER", invoker))
+            }
+        }
+
     }
 
     private fun getInvoker(headers: HttpHeaders): String {
@@ -28,7 +32,8 @@ class RequestIdFilter : WebFilter {
 
     private fun getRequestId(headers: HttpHeaders): String {
         val requestIdHeaders = headers["X-Request-ID"]
-        return if (requestIdHeaders == null || requestIdHeaders.isEmpty()) UUID.randomUUID().toString() else requestIdHeaders[0]
+        return if (requestIdHeaders == null || requestIdHeaders.isEmpty()) UUID.randomUUID()
+            .toString() else requestIdHeaders[0]
     }
 
     companion object {

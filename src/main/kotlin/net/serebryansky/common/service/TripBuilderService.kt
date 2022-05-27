@@ -5,5 +5,5 @@ import net.serebryansky.nology.model.Trip
 import reactor.core.publisher.Mono
 
 interface TripBuilderService {
-    fun buildTrip(trip: Trip): Mono<TripBuilderResponse>
+    suspend fun buildTrip(trip: Trip): TripBuilderResponse
 }

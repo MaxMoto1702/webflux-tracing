@@ -1,5 +1,7 @@
 package net.serebryansky.common.filter
 
+import net.serebryansky.common.invokerKey
+import net.serebryansky.common.requestKey
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.http.HttpHeaders
@@ -15,14 +17,11 @@ class RequestIdFilter : WebFilter {
         val request = exchange.request
         val requestId = getRequestId(request.headers)
         val invoker = getInvoker(request.headers)
-        return MDC.putCloseable("MDC_KEY", requestId).use {
-            MDC.putCloseable("INVOKER_KEY", invoker).use {
-                chain
-                    .filter(exchange)
-                    .contextWrite(Context.of("CONTEXT_KEY", requestId, "INVOKER", invoker))
-            }
-        }
-
+        MDC.put(requestKey, requestId)
+        MDC.put(invokerKey, invoker)
+        return chain
+            .filter(exchange)
+            .contextWrite(Context.of(requestKey, requestId, invokerKey, invoker))
     }
 
     private fun getInvoker(headers: HttpHeaders): String {

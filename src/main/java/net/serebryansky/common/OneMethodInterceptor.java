@@ -32,6 +32,9 @@ import org.springframework.core.ReactiveAdapter;
 import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.core.convert.converter.Converter;
 
+import static net.serebryansky.common.ConstantsKt.invokerKey;
+import static net.serebryansky.common.ConstantsKt.requestKey;
+
 public class OneMethodInterceptor implements MethodInterceptor {
     private static final String COROUTINES_FLOW_CLASS_NAME = "kotlinx.coroutines.flow.Flow";
 
@@ -79,10 +82,12 @@ public class OneMethodInterceptor implements MethodInterceptor {
         }
         KClassifier classifier = function.getReturnType().getClassifier();
         Mono<Object> mono = Mono.deferContextual(contextView -> {
-                    String contextKey = contextView.get("CONTEXT_KEY");
-                    MDC.put("MDC_KEY", contextKey); // Put a value into the MDC context
+                    String requestId = contextView.get(requestKey);
+                    String invoker = contextView.get(invokerKey);
+                    MDC.put(requestKey, requestId); // Put a value into the MDC context
+                    MDC.put(invokerKey, invoker); // Put a value into the MDC context
                     return MonoKt.<Object>mono(
-                            ((CoroutineContext) new MDCContext()),
+                            new MDCContext(),
                             (scope, continuation) -> KCallables.<Object>callSuspend(function, getSuspendedFunctionArgs(target, args), continuation)
                     );
                 })

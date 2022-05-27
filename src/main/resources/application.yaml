@@ -11,7 +11,7 @@ integrations:
     url: "http://localhost:8081"
 logging:
   pattern:
-    level: "[%X{MDC_KEY}] [%X{INVOKER_KEY}] %5p"
+    level: "[%X{REQUEST_KEY}] [%X{INVOKER_KEY}] %5p"
 spring:
   aop:
     auto: false

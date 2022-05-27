@@ -4,6 +4,7 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import net.serebryansky.builder.model.TripBuilderResponse
+import net.serebryansky.common.requestKey
 import net.serebryansky.common.service.TripBuilderService
 import net.serebryansky.nology.model.Trip
 import org.springframework.web.reactive.function.client.WebClient
@@ -19,7 +20,7 @@ class TripBuilderServiceImpl(
 
     override suspend fun buildTrip(trip: Trip): TripBuilderResponse {
         log.info { "Build trip $trip" }
-        val requestId = Mono.deferContextual { mono { it.get<String>("CONTEXT_KEY") } }.awaitFirst()
+        val requestId = Mono.deferContextual { mono { it.get<String>(requestKey) } }.awaitFirst()
         return tripBuilderClient
             .post()
             .uri("build")

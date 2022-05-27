@@ -3,6 +3,7 @@ package net.serebryansky.common.service.impl
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
+import net.serebryansky.common.requestKey
 import net.serebryansky.common.service.RoutingService
 import net.serebryansky.place.model.Place
 import net.serebryansky.routing.model.DurationMatrixResponse
@@ -21,7 +22,7 @@ class RoutingServiceImpl(
 
     override suspend fun getDurationMatrix(places: List<Place>): DurationMatrixResponse {
         log.info { "Get duration matrix for $places" }
-        val requestId = Mono.deferContextual { mono { it.get<String>("CONTEXT_KEY") } }.awaitFirst()
+        val requestId = Mono.deferContextual { mono { it.get<String>(requestKey) } }.awaitFirst()
         return routingClient
             .post()
             .uri("/durations/matrix")
@@ -34,7 +35,7 @@ class RoutingServiceImpl(
 
     override suspend fun getRoute(places: List<Place>): Route {
         log.info { "Get route between ${places[0]} and ${places[1]}" }
-        val requestId = Mono.deferContextual { mono { it.get<String>("CONTEXT_KEY") } }.awaitFirst()
+        val requestId = Mono.deferContextual { mono { it.get<String>(requestKey) } }.awaitFirst()
         return routingClient
             .post()
             .uri("/routes/search")

@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
+import net.serebryansky.common.requestKey
 import net.serebryansky.common.service.PlaceService
 import net.serebryansky.place.model.Place
 import org.springframework.web.reactive.function.client.WebClient
@@ -17,7 +18,7 @@ class PlaceServiceImpl(private val placeClient: WebClient, private val applicati
 
     override suspend fun getPlaces(): Flow<Place> {
         log.info { "Get places" }
-        val requestId = Mono.deferContextual { mono { it.get<String>("CONTEXT_KEY") } }.awaitFirst()
+        val requestId = Mono.deferContextual { mono { it.get<String>(requestKey) } }.awaitFirst()
         return placeClient
             .get()
             .uri("/places")
@@ -29,7 +30,7 @@ class PlaceServiceImpl(private val placeClient: WebClient, private val applicati
 
     override suspend fun getPlace(id: String): Place {
         log.info { "Get place $id" }
-        val requestId = Mono.deferContextual { mono { it.get<String>("CONTEXT_KEY") } }.awaitFirst()
+        val requestId = Mono.deferContextual { mono { it.get<String>(requestKey) } }.awaitFirst()
         return placeClient
             .get()
             .uri("/places/{id}", id)
